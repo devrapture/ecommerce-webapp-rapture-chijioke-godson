@@ -8,7 +8,7 @@ export const useProductList = (
   maxValue: number,
 ) => {
   const _search = search?.trim()?.toLowerCase();
-  console.log("minValue", minValue);
+
   return useQuery({
     queryKey: ["productList"],
     queryFn: async (): Promise<ProductListResponse[]> => {
@@ -31,6 +31,7 @@ export const useProductList = (
         ?.map((item) => ({
           ...item,
           price: (item?.price * (1 + 2.2 / 100))?.toFixed(2),
+          quantity: item?.rating?.count,
         })),
   });
 };

@@ -1,7 +1,7 @@
 "use client";
 import ProductsSkeleton from "@/components/products-skeleton";
 import SkeletonWrapper from "@/components/skeleton-wrapper";
-import {useProductFilters} from "@/hooks/logic/use-product-filters"
+import { useProductFilters } from "@/hooks/logic/use-product-filters";
 import {
   Badge,
   Button,
@@ -17,6 +17,9 @@ import {
 import Image from "next/image";
 import numeral from "numeral";
 import { NumberInput } from "@mantine/core";
+import { useCartStore } from "@/app/store/cart";
+import { getQuantityOrder, isAddedToCart } from "@/lib/utils";
+
 
 const HomepageClient = () => {
   const {
@@ -29,12 +32,17 @@ const HomepageClient = () => {
     handleMinRangeValue,
     handleMaxRangeValue,
   } = useProductFilters();
+  const {addToCart,items,updateQuantity,removeFromCart} = useCartStore()
 
   return (
     <>
       <Box className="sticky top-10 z-10 rounded-md bg-white/80 p-2 shadow-sm backdrop-blur-sm">
         <Group className="items-end sm:justify-end">
-          <TextInput placeholder="Search products" onChange={handleSearch} />
+          <TextInput
+            placeholder="Search products"
+            value={search}
+            onChange={handleSearch}
+          />
           <Box>
             <Text>Price Range</Text>
             <Group className="items-end">
@@ -83,7 +91,7 @@ const HomepageClient = () => {
                   size="sm"
                   className="absolute top-2 left-2"
                 >
-                  {item.category}
+                  {item?.category}
                 </Badge>
               </Card.Section>
 
@@ -109,10 +117,39 @@ const HomepageClient = () => {
                     </Text>
                   </Group>
                 </Group>
-
-                <Button fullWidth variant="filled" className="mt-auto">
+                {
+                  isAddedToCart(item?.id,items) ?  
+                  <Group className="mt-auto">
+                    <Button 
+                      size="xs" 
+                      // @ts-expect-error unknown
+                      onClick={() => updateQuantity(item?.id, getQuantityOrder(item?.id,items) - 1)}
+                    >
+                      -
+                    </Button>
+                    <Text>{getQuantityOrder(item?.id,items)}</Text>
+                    <Button 
+                      size="xs" 
+                       // @ts-expect-error unknown
+                      onClick={() => updateQuantity(item?.id, getQuantityOrder(item?.id,items) + 1)}
+                    >
+                      +
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="xs" 
+                      onClick={() => removeFromCart(item?.id)}
+                    >
+                      Remove
+                    </Button>
+                  </Group>  
+                :            
+                  // @ts-expect-error unknown
+                  <Button onClick={()=>addToCart(item)} fullWidth variant="filled" className="mt-auto">
                   Add to Cart
-                </Button>
+                </Button> 
+                }
+             
               </Stack>
             </Card>
           ))}

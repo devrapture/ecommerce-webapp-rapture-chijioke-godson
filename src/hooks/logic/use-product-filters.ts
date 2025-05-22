@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent,  } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useProductList } from "../query/use-product";
 
@@ -25,7 +25,7 @@ export const useProductFilters = () => {
     setMinValue(value as number);
   };
 
-  const handleMaxRangeValue = (value: number | string ) => {
+  const handleMaxRangeValue = (value: number | string) => {
     setMaxValue(value as number);
   };
 
