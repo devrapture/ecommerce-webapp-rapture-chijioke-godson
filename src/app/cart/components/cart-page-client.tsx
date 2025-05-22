@@ -1,9 +1,11 @@
 "use client";
-import ProductsSkeleton from "@/components/products-skeleton";
-import SkeletonWrapper from "@/components/skeleton-wrapper";
-import { useProductFilters } from "@/hooks/logic/use-product-filters";
+
+import { useCartStore } from "@/app/store/cart";
+import { toast } from "@/components/ui/toast";
+import { getQuantityOrder, isAddedToCart } from "@/lib/utils";
 import {
   Badge,
+  Box,
   Button,
   Card,
   Group,
@@ -11,64 +13,63 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  TextInput,
-  Box,
 } from "@mantine/core";
+import { useMounted } from "@mantine/hooks";
 import Image from "next/image";
 import numeral from "numeral";
-import { NumberInput } from "@mantine/core";
-import { useCartStore } from "@/app/store/cart";
-import { getQuantityOrder, isAddedToCart } from "@/lib/utils";
 
-const HomepageClient = () => {
+const CartPageClient = () => {
+  const mounted = useMounted();
   const {
-    search,
-    minValue,
-    maxValue,
-    data,
-    isLoading,
-    handleSearch,
-    handleMinRangeValue,
-    handleMaxRangeValue,
-  } = useProductFilters();
-  const { addToCart, items, updateQuantity, removeFromCart } = useCartStore();
+    addToCart,
+    items,
+    updateQuantity,
+    totalPrice,
+    removeFromCart,
+    totalItems,
+    clearCart,
+  } = useCartStore();
+  const handleCheckout = () => {
+    clearCart();
+    toast({
+      message: "Checkout successfully",
+      variant: "success",
+    });
+  };
+  if (!mounted) return null;
+  if (!items?.length) {
+    return <Text className="mt-10 text-center font-bold">No item in cart</Text>;
+  }
 
   return (
-    <>
-      <Box className="sticky top-10 z-10 rounded-md bg-white/80 p-2 shadow-sm backdrop-blur-sm">
-        <Group className="items-end sm:justify-end">
-          <TextInput
-            placeholder="Search products"
-            value={search}
-            onChange={handleSearch}
-          />
-          <Box>
-            <Text>Price Range</Text>
-            <Group className="items-end">
-              <NumberInput
-                label="Min value"
-                value={minValue}
-                onChange={handleMinRangeValue}
-                min={5}
-              />
-              <Text>-</Text>
-              <NumberInput
-                label="Max value"
-                value={maxValue}
-                onChange={handleMaxRangeValue}
-                min={10}
-              />
-            </Group>
-          </Box>
-        </Group>
-      </Box>
-      <SkeletonWrapper
-        isLoading={isLoading}
-        Loader={<ProductsSkeleton />}
-        isEmpty={!data?.length}
-      >
-        <SimpleGrid className="my-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
-          {data?.map((item) => (
+    <Box className="mt-10">
+      <SimpleGrid className="grid grid-cols-1 gap-10 xl:grid-cols-[2fr_1fr]">
+        <Card
+          radius="md"
+          shadow="sm"
+          padding="lg"
+          withBorder
+          className="h-fit xl:order-last"
+        >
+          <Text>Cart Summary</Text>
+
+          <Group className="mt-5 justify-between">
+            <Text>
+              item&apos;s total(
+              <Text span className="font-bold">
+                {totalItems()}
+              </Text>
+              )
+            </Text>
+            <Text>{numeral(totalPrice()).format("$0,0.00")}</Text>
+          </Group>
+
+          <Button onClick={handleCheckout} className="mt-10">
+            Checkout
+          </Button>
+        </Card>
+        <SimpleGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+          {items?.map((item) => (
             <Card
               shadow="sm"
               padding="lg"
@@ -106,7 +107,7 @@ const HomepageClient = () => {
 
                   <Group gap={4} align="center">
                     <Rating
-                      value={item.rating.rate}
+                      value={item?.rating?.rate}
                       fractions={2}
                       readOnly
                       size="sm"
@@ -153,7 +154,6 @@ const HomepageClient = () => {
                   </Group>
                 ) : (
                   <Button
-                    // @ts-expect-error unknown
                     onClick={() => addToCart(item)}
                     fullWidth
                     variant="filled"
@@ -166,8 +166,9 @@ const HomepageClient = () => {
             </Card>
           ))}
         </SimpleGrid>
-      </SkeletonWrapper>
-    </>
+      </SimpleGrid>
+    </Box>
   );
 };
-export default HomepageClient;
+
+export default CartPageClient;

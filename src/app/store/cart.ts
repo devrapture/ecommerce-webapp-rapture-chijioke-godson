@@ -6,8 +6,13 @@ export interface CartItem {
   title: string;
   price: number;
   image: string;
-  quantity: number;       // Available stock
-  quantityOrder: number;  // Quantity in cart
+  quantity: number;
+  quantityOrder: number;
+  category?: string;
+  rating?: {
+    rate?: number;
+    count?: number;
+  };
 }
 
 export interface CartStore {
@@ -32,50 +37,49 @@ export const useCartStore = create<CartStore>()(
             );
 
             if (existingItem) {
-              // If item exists, increase quantityOrder by 1 and decrease available quantity by 1
               return {
                 items: state.items.map((item) =>
                   item.id === product.id
-                    ? { 
-                        ...item, 
+                    ? {
+                        ...item,
                         quantityOrder: item.quantityOrder + 1,
-                        quantity: item.quantity - 1 
+                        quantity: item.quantity - 1,
                       }
                     : item,
                 ),
               };
             }
 
-            // For new item, set quantityOrder to 1 and decrease available quantity by 1
-            return { 
+            return {
               items: [
-                ...state.items, 
-                { 
-                  ...product, 
+                ...state.items,
+                {
+                  ...product,
                   quantityOrder: 1,
-                  quantity: product.quantity - 1 
-                }
-              ] 
+                  quantity: product.quantity - 1,
+                },
+              ],
             };
           });
         },
         removeFromCart: (id) => {
           set((state) => ({
-            items: state.items.map(item => {
-              if (item.id === id) {
-                // When removing from cart, return the ordered quantity back to available quantity
-                return {
-                  ...item,
-                  quantity: item.quantity + item.quantityOrder,
-                  quantityOrder: 0
-                };
-              }
-              return item;
-            }).filter(item => item.quantityOrder > 0) // Actually remove items with 0 quantityOrder
+            items: state.items
+              .map((item) => {
+                if (item.id === id) {
+                  return {
+                    ...item,
+                    quantity: item.quantity + item.quantityOrder,
+                    quantityOrder: 0,
+                  };
+                }
+                return item;
+              })
+              .filter((item) => item.quantityOrder > 0),
           }));
         },
-        updateQuantity: (id, newQuantityOrder?:number) => {
-          if(!newQuantityOrder) return
+        updateQuantity: (id, newQuantityOrder?: number) => {
+          if (!newQuantityOrder) return;
           if (newQuantityOrder <= 0) {
             get().removeFromCart(id);
             return;
@@ -84,24 +88,27 @@ export const useCartStore = create<CartStore>()(
           set((state) => ({
             items: state.items.map((item) => {
               if (item.id === id) {
-                const quantityDifference = newQuantityOrder - item.quantityOrder;
-                return { 
-                  ...item, 
+                const quantityDifference =
+                  newQuantityOrder - item.quantityOrder;
+                return {
+                  ...item,
                   quantityOrder: newQuantityOrder,
-                  quantity: item.quantity - quantityDifference
+                  quantity: item.quantity - quantityDifference,
                 };
               }
               return item;
             }),
           }));
         },
-        clearCart: () => set((state) => ({
-          items: state.items.map(item => ({
-            ...item,
-            quantity: item.quantity + item.quantityOrder, // Return all ordered quantities
-            quantityOrder: 0
-          })).filter(item => item.quantityOrder > 0) // Clear the cart
-        })),
+        clearCart: () =>
+          set((state) => ({
+            items: state.items
+              .map((item) => ({
+                ...item,
+                quantityOrder: 0,
+              }))
+              .filter((item) => item.quantityOrder > 0),
+          })),
         totalItems: () =>
           get().items.reduce((sum, item) => sum + item.quantityOrder, 0),
         totalPrice: () =>

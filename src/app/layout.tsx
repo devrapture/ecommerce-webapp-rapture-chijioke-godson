@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { poppins } from "@/lib/fonts";
 import "@/styles/globals.css";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
+import { Toaster } from "sonner";
 
 import { type Metadata } from "next";
 
@@ -30,6 +31,7 @@ export default function RootLayout({
       </head>
       <body>
         <Provider>
+          <Toaster position="top-center" />
           <MainLayout>{children}</MainLayout>
         </Provider>
       </body>
