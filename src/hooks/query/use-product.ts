@@ -2,8 +2,13 @@ import apis from "@/services/api-services";
 import type { ProductListResponse } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 
-export const useProductList = (search: string) => {
+export const useProductList = (
+  search: string,
+  minValue: number,
+  maxValue: number,
+) => {
   const _search = search?.trim()?.toLowerCase();
+  console.log("minValue", minValue);
   return useQuery({
     queryKey: ["productList"],
     queryFn: async (): Promise<ProductListResponse[]> => {
@@ -12,11 +17,17 @@ export const useProductList = (search: string) => {
     },
     select: (data) =>
       data
-        ?.filter(
-          (item) =>
+        ?.filter((item) => {
+          const matchesSearch =
             item?.title?.toLowerCase()?.includes(_search) ||
-            item?.category?.toLowerCase()?.includes(_search),
-        )
+            item?.category?.toLowerCase()?.includes(_search);
+
+          const itemPrice = parseFloat(item.price.toString());
+          const matchesPriceRange =
+            itemPrice >= minValue && itemPrice <= maxValue;
+
+          return matchesSearch && matchesPriceRange;
+        })
         ?.map((item) => ({
           ...item,
           price: (item?.price * (1 + 2.2 / 100))?.toFixed(2),

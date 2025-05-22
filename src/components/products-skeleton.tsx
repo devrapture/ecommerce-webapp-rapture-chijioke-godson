@@ -5,7 +5,7 @@ const ProductsSkeleton = () => {
   return (
     <Repeater
       count={8}
-      className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4 my-10"
+      className="my-10 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4"
     >
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Card.Section className="relative">

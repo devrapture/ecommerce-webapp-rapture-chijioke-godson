@@ -1,7 +1,7 @@
 "use client";
 import ProductsSkeleton from "@/components/products-skeleton";
 import SkeletonWrapper from "@/components/skeleton-wrapper";
-import { useProductList } from "@/hooks/query/use-product";
+import {useProductFilters} from "@/hooks/logic/use-product-filters"
 import {
   Badge,
   Button,
@@ -12,23 +12,54 @@ import {
   Stack,
   Text,
   TextInput,
+  Box,
 } from "@mantine/core";
-import { useDebouncedValue } from "@mantine/hooks";
 import Image from "next/image";
 import numeral from "numeral";
-import { useState, type ChangeEvent } from "react";
+import { NumberInput } from "@mantine/core";
 
 const HomepageClient = () => {
-  const [search, setSearch] = useState("");
-  const [debouncedSearchValue] = useDebouncedValue(search, 200);
-  const { data, isLoading } = useProductList(debouncedSearchValue);
-  const handleSearch = (e:ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)
+  const {
+    search,
+    minValue,
+    maxValue,
+    data,
+    isLoading,
+    handleSearch,
+    handleMinRangeValue,
+    handleMaxRangeValue,
+  } = useProductFilters();
+
   return (
     <>
-      <Group className="justify-end">
-        <TextInput placeholder="Search products" onChange={handleSearch} />
-      </Group>
-      <SkeletonWrapper isLoading={isLoading} Loader={<ProductsSkeleton />} isEmpty={!data?.length}>
+      <Box className="sticky top-10 z-10 rounded-md bg-white/80 p-2 shadow-sm backdrop-blur-sm">
+        <Group className="items-end sm:justify-end">
+          <TextInput placeholder="Search products" onChange={handleSearch} />
+          <Box>
+            <Text>Price Range</Text>
+            <Group className="items-end">
+              <NumberInput
+                label="Min value"
+                value={minValue}
+                onChange={handleMinRangeValue}
+                min={5}
+              />
+              <Text>-</Text>
+              <NumberInput
+                label="Max value"
+                value={maxValue}
+                onChange={handleMaxRangeValue}
+                min={10}
+              />
+            </Group>
+          </Box>
+        </Group>
+      </Box>
+      <SkeletonWrapper
+        isLoading={isLoading}
+        Loader={<ProductsSkeleton />}
+        isEmpty={!data?.length}
+      >
         <SimpleGrid className="my-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
           {data?.map((item) => (
             <Card
