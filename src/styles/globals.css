@@ -1,6 +1,11 @@
-@import "tailwindcss";
+@import "tailwind-preset-mantine";
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-poppins: var(--font-poppins);
+}
+
+@layer components {
+  .error {
+    @apply border border-red-500;
+  }
 }
